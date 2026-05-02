@@ -11,10 +11,6 @@ from airflow.providers.airbyte.operators.airbyte import AirbyteTriggerSyncOperat
 # ======================
 #AIRBYTE_URL = "http://host.docker.internal:8000" 
 
-# AIRBYTE_CONNECTION_IDS = [
-#     "0ba680c2-9f69-482b-9ada-1c3e6b5a2433"
-# ]
-
 DBT_PROJECT_DIR = "/opt/airflow/dags/beejanride"  
 DBT_PROFILES_DIR = "/opt/airflow/.dbt"
 
