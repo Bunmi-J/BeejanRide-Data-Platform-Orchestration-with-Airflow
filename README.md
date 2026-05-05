@@ -15,3 +15,85 @@ Monitoring
 Backfills
 Idempotency
 Clear separation between ingestion, transformation, testing, and alerting
+
+
+Required Deliverables
+
+Step 3 — Try to manually start worker
+
+Run:
+
+docker start airflow-airflow-worker-1
+
+Submit the following:
+
+Public GitHub repository (It can be the same repo as the dbt project)
+Updated README explaining your orchestration design - The orchestration design for the BeejanRide platform is managed by Apache Airflow. Airflow manages the sequence, creates, schedule, monitor, timing, and conditions under which different components execute and manage workflow pipelines that span across clouds.
+-- Core Characteristics
+Centralized Control – A single orchestrator decides what happens next.
+Workflow Definition – Steps are predefined (sequential, parallel, conditional).
+Error Handling – Set dags default argument to handle error, define number of retries, retries relay, back fill and so on. Orchestrator can retry, compensate, or roll back.
+State Management – use Airflow UI to monitor and keep track of progress and intermediate results.
+
+Example: Microservices Order Processing
+Workflow:
+Airbyte sync → sync airbyte data with Airflow this allows interaction with airbyte directly Create order
+Payment Service → Process payment
+Inventory Service → Reserve stock
+Shipping Service → Arrange delivery
+
+Airbyte sync → Create order
+Payment Service → Process payment
+Inventory Service → Reserve stock
+Shipping Service → Arrange delivery
+With Orchestration:
+
+The Orchestrator calls each service in order.
+If payment fails, it triggers a compensation (cancel order).
+If inventory fails, it refunds payment and cancels order.
+
+Updated architecture diagram
+Screenshots of DAGs in the Airflow UI
+Example of a successful DAG run
+Example of a failed DAG run and notification
+Example of a backfill execution
+Explanation of how idempotency is maintained
+
+SUCCESSFUL DAG 
+<img width="607" height="98" alt="image" src="https://github.com/user-attachments/assets/4f1a6dc5-634c-49ec-82ed-93e4ef8db283" />
+DBT TEST FAILED DAG RUN WITH NOTIFICATION
+<img width="614" height="191" alt="image" src="https://github.com/user-attachments/assets/07b9185d-94af-4057-b423-33bb1361e9e4" />
+
+DBT TEST FAILED DAG RUN LOG
+[2026-05-05 22:44:47] INFO - 21:44:47  Finished running 93 data tests in 0 hours 0 minutes and 31.35 seconds (31.35s).
+[2026-05-05 22:44:47] INFO - 21:44:47
+[2026-05-05 22:44:47] INFO - 21:44:47  Completed with 1 error, 0 partial successes, and 0 warnings:
+[2026-05-05 22:44:47] INFO - 21:44:47
+[2026-05-05 22:44:47] INFO - 21:44:47  Failure in test completed_trip_successful_payment (tests/completed_trip_successful_payment.sql)
+[2026-05-05 22:44:47] INFO - 21:44:47    Got 1 result, configured to fail if != 0
+[2026-05-05 22:44:47] INFO - 21:44:47
+[2026-05-05 22:44:47] INFO - 21:44:47    compiled code at target/compiled/beejan_ride/tests/completed_trip_successful_payment.sql
+[2026-05-05 22:44:47] INFO - 21:44:47
+[2026-05-05 22:44:47] INFO - 21:44:47  Done. PASS=92 WARN=0 ERROR=1 SKIP=0 NO-OP=0 TOTAL=93
+[2026-05-05 22:44:49] INFO - Command exited with return code 1
+[2026-05-05 22:44:49] ERROR - Task failed with exception
+AirflowException: Bash command failed. The command returned a non-zero exit code 1.
+File "/home/airflow/.local/lib/python3.12/site-packages/airflow/sdk/execution_time/task_runner.py", line 1112 in run
+
+File "/home/airflow/.local/lib/python3.12/site-packages/airflow/sdk/execution_time/task_runner.py", line 1528 in _execute_task
+
+File "/home/airflow/.local/lib/python3.12/site-packages/airflow/sdk/bases/operator.py", line 417 in wrapper
+
+File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/standard/operators/bash.py", line 226 in execute
+
+[2026-05-05 22:44:49] INFO - Task instance in failure state
+[2026-05-05 22:44:49] INFO - Task start
+[2026-05-05 22:44:49] INFO - Task:<Task(BashOperator): dbt_tests>
+[2026-05-05 22:44:49] INFO - Failure caused by Bash command failed. The command returned a non-zero exit code 1.
+
+Explanation of how idempotency is maintained
+BeejanRide workflow are designed to be idempotent, meaning that running the task multiple times with the same input yields the same result. This is crucial for re-running DAGs without altering the final output.
+For this project idempotency is maitained by splitting a task into separate tasks , ensuring that the failure of one task does not impact the other.
+Task Design: Tasks should be designed to be atomic to avoid partial completion and subsequent downstream errors. This can be achieved by splitting a task into separate tasks, ensuring that the failure of one does not impact the other.
+Retrieval and Backfilling: Airflow supports retries and backfills, allowing for the resumption of tasks after failures. This is done by setting the retries parameter to the task's Operator or including it in the DAG's default_args object. 
+
