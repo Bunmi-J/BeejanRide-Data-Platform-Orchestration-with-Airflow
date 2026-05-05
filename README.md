@@ -64,7 +64,11 @@ SUCCESSFUL DAG
 DBT TEST FAILED DAG RUN WITH NOTIFICATION
 <img width="614" height="191" alt="image" src="https://github.com/user-attachments/assets/07b9185d-94af-4057-b423-33bb1361e9e4" />
 
-DBT TEST FAILED DAG RUN LOG
+--- DBT TEST FAILED DAG RUN LOG - Failure in test completed_trip_successful_payment Got 1 result, configured to fail if != 0
+This is not a system failure the pipeline is actually working correctly. 
+This is just a dbt test doing its job and catching bad data. Every completed_trip must have a successful_payment but if there is no payment received, then an error is raised.
+
+
 [2026-05-05 22:44:47] INFO - 21:44:47  Finished running 93 data tests in 0 hours 0 minutes and 31.35 seconds (31.35s).
 [2026-05-05 22:44:47] INFO - 21:44:47
 [2026-05-05 22:44:47] INFO - 21:44:47  Completed with 1 error, 0 partial successes, and 0 warnings:
