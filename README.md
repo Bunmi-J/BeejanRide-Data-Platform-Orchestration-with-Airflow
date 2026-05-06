@@ -1,11 +1,11 @@
 # BeejanRide Automation
 
 
--- BeejanRide wants the hail and ride platform to run automatically in production. Your next task is to extend the existing project by implementing orchestration with Apache Airflow.
+BeejanRide wants the hail and ride platform to run automatically in production. Your next task is to extend the existing project by implementing orchestration with Apache Airflow.
 
 This project implements orchestration with Apache Airflow to coordinate, manage and complete Beejanride platform ELT workflow without any manual intervention in production.
 
-Project Objective
+## Project Objective
 The main objective is to design and implement a production-grade orchestration layer for the BeejanRide platform using Airflow. The solution demonstrates:
 
  * Orchestration of Airbyte syncs
@@ -19,56 +19,31 @@ The main objective is to design and implement a production-grade orchestration l
  * Idempotency
  * Clear separation between ingestion, transformation, testing, and alerting
 
-
-Required Deliverables
-
-Step 3 — Try to manually start worker
-
-Run:
-
-docker start airflow-airflow-worker-1
-
-Submit the following:
-
-Public GitHub repository (It can be the same repo as the dbt project)
-Updated README explaining your orchestration design - The orchestration design for the BeejanRide platform is managed by Apache Airflow. Airflow manages the sequence, creates, schedule, monitor, timing, and conditions under which different components execute and manage workflow pipelines that span across clouds.
--- Core Characteristics
-Centralized Control – A single orchestrator decides what happens next.
-Workflow Definition – Steps are predefined (sequential, parallel, conditional).
-Error Handling – Set dags default argument to handle error, define number of retries, retries relay, back fill and so on. Orchestrator can retry, compensate, or roll back.
-State Management – use Airflow UI to monitor and keep track of progress and intermediate results.
-
 BeejanRide Orcherstration Workflow:
  * Airbyte sync → sync airbyte data with Airflow this enables automation of the data synchronization. interaction with airbyte directly Create order
- * Beejan_staging → Automation task to Process payment
- * Intermediate → Reserve stock
- * Marts → Arrange delivery
- * Test
+ * Beejan_staging → Automation task to standardardize and transform raw data into clean models to ensure consistent building block for the downstream analytics.
+ * Intermediate → Automation stage for managing and scheduling business logic are implemented by building on the staging models to create reuseable tranformation logics
+ * Marts → Automation task for managing and scheduling dimension and fact tables deisgned for business intelligence tools (Power BI, Tableau), Analysts and dashboards
+ * Test  → Automation task to ascertain that the tranformed data adheres to business rules, logics while enhancing data integrity and high quality data that meets desired business objectives.
 
 
-With Orchestration:
+## With Orchestration:
 
 The Apache Airflow, calls each task in order.
 If the data ingestion and sychrononization fails, the sync_airbyte, it triggers an error message and the upstreams which include the staging, intermediate, marts and test will all fail.
-If inventory fails, it refunds payment and cancels order.
-
 Updated architecture diagram
-Screenshots of DAGs in the Airflow UI
-Example of a successful DAG run
-Example of a failed DAG run and notification
-Example of a backfill execution
-Explanation of how idempotency is maintained
 
-SUCCESSFUL DAG 
+## SUCCESSFUL DAG 
 <img width="607" height="98" alt="image" src="https://github.com/user-attachments/assets/4f1a6dc5-634c-49ec-82ed-93e4ef8db283" />
-DBT TEST FAILED DAG RUN WITH NOTIFICATION
+
+## DBT TEST FAILED DAG
 <img width="614" height="191" alt="image" src="https://github.com/user-attachments/assets/07b9185d-94af-4057-b423-33bb1361e9e4" />
 
---- DBT TEST FAILED DAG RUN LOG - Failure in test completed_trip_successful_payment Got 1 result, configured to fail if != 0
-This is not a system failure the pipeline is actually working correctly. 
-This is just a dbt test doing its job and catching bad data. Every completed_trip must have a successful_payment but if there is no payment received, then an error is raised.
+ * Failure in test completed_trip_successful_payment Got 1 result, configured to fail if != 0
+   This is not a system failure the pipeline is actually working correctly. 
+   This is just a dbt test doing its job and catching bad data. Every completed_trip must have a successful_payment but if there is no payment received, then an error is      raised.
 
-
+## DBT TEST FAILED DAG RUN LOG 
 [2026-05-05 22:44:47] INFO - 21:44:47  Finished running 93 data tests in 0 hours 0 minutes and 31.35 seconds (31.35s).
 [2026-05-05 22:44:47] INFO - 21:44:47
 [2026-05-05 22:44:47] INFO - 21:44:47  Completed with 1 error, 0 partial successes, and 0 warnings:
@@ -95,9 +70,9 @@ File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/standa
 [2026-05-05 22:44:49] INFO - Task:<Task(BashOperator): dbt_tests>
 [2026-05-05 22:44:49] INFO - Failure caused by Bash command failed. The command returned a non-zero exit code 1.
 
-Explanation of how idempotency is maintained
+## Explanation of How idempotency is Maintained
 BeejanRide workflow are designed to be idempotent, meaning that running the task multiple times with the same input yields the same result. This is crucial for re-running DAGs without altering the final output.
 For this project idempotency is maitained by splitting a task into separate tasks , ensuring that the failure of one task does not impact the other.
-Task Design: Tasks should be designed to be atomic to avoid partial completion and subsequent downstream errors. This can be achieved by splitting a task into separate tasks, ensuring that the failure of one does not impact the other.
-Retrieval and Backfilling: Airflow supports retries and backfills, allowing for the resumption of tasks after failures. This is done by setting the retries parameter to the task's Operator or including it in the DAG's default_args object. 
+Tasks should is designed to be atomic to avoid partial completion and subsequent downstream errors. This is achieved by splitting a task into separate tasks, ensuring that the failure of one does not impact the other.
+The orcherstration design supports retries and backfills, allowing for the resumption of tasks after failures. This is done by setting the retries parameter to the task's Operator or including it in the DAG's default_args object. 
 
