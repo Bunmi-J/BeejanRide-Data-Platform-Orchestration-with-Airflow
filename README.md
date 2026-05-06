@@ -1,20 +1,20 @@
-BeejanRide wants the hail and ride platform to run automatically in production. Your next task is to extend the existing project by implementing orchestration with Apache Airflow.
+# BeejanRide wants the hail and ride platform to run automatically in production. Your next task is to extend the existing project by implementing orchestration with Apache Airflow.
 
 This project implements orchestration with Apache Airflow to coordinate, manage and complete Beejanride platform ELT workflow without any manual intervention in production.
 
 Project Objective
 The main objective is to design and implement a production-grade orchestration layer for the BeejanRide platform using Airflow. The solution demonstrates:
 
-Orchestration of Airbyte syncs
-Trigger dbt runs and tests
-Scheduling
-Task dependencies
-Failure handling
-Retries
-Monitoring
-Backfills
-Idempotency
-Clear separation between ingestion, transformation, testing, and alerting
+ * Orchestration of Airbyte syncs
+ * Trigger dbt runs and tests
+ * Scheduling
+ * Task dependencies
+ * Failure handling
+ * Retries
+ * Monitoring
+ * Backfills
+ * Idempotency
+ * Clear separation between ingestion, transformation, testing, and alerting
 
 
 Required Deliverables
@@ -35,21 +35,18 @@ Workflow Definition – Steps are predefined (sequential, parallel, conditional)
 Error Handling – Set dags default argument to handle error, define number of retries, retries relay, back fill and so on. Orchestrator can retry, compensate, or roll back.
 State Management – use Airflow UI to monitor and keep track of progress and intermediate results.
 
-Example: Microservices Order Processing
-Workflow:
-Airbyte sync → sync airbyte data with Airflow this allows interaction with airbyte directly Create order
-Payment Service → Process payment
-Inventory Service → Reserve stock
-Shipping Service → Arrange delivery
+BeejanRide Orcherstration Workflow:
+ * Airbyte sync → sync airbyte data with Airflow this enables automation of the data synchronization. interaction with airbyte directly Create order
+ * Beejan_staging → Automation task to Process payment
+ * Intermediate → Reserve stock
+ * Marts → Arrange delivery
+ * Test
 
-Airbyte sync → Create order
-Payment Service → Process payment
-Inventory Service → Reserve stock
-Shipping Service → Arrange delivery
+
 With Orchestration:
 
-The Orchestrator calls each service in order.
-If payment fails, it triggers a compensation (cancel order).
+The Apache Airflow, calls each task in order.
+If the data ingestion and sychrononization fails, the sync_airbyte, it triggers an error message and the upstreams which include the staging, intermediate, marts and test will all fail.
 If inventory fails, it refunds payment and cancels order.
 
 Updated architecture diagram
